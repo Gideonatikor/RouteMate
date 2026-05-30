@@ -21,7 +21,6 @@ type RouteSummaryCardProps = {
 const summaryItems = [
   { key: "fare", label: "Estimated fare", icon: Banknote, color: "text-emerald-600" },
   { key: "time", label: "Estimated time", icon: Clock3, color: "text-sky-700" },
-  { key: "savings", label: "You save", icon: Car, color: "text-emerald-600" },
   { key: "vehicle", label: "Transport type", icon: BusFront, color: "text-amber-600" },
 ] as const;
 
@@ -113,7 +112,7 @@ export function RouteSummaryCard({
           </div>
         </div>
 
-        <div className="grid gap-3 px-5 py-5 sm:grid-cols-2 sm:px-6 xl:grid-cols-4">
+        <div className="grid gap-3 px-5 py-5 sm:grid-cols-3 sm:px-6">
           {summaryItems.map((item) => {
             const Icon = item.icon;
 
@@ -121,11 +120,9 @@ export function RouteSummaryCard({
               <div
                 key={item.key}
                 className={`rounded-[22px] border p-4 ${
-                  item.key === "savings"
-                    ? "border-emerald-200 bg-emerald-50"
-                    : item.key === "vehicle"
-                      ? "border-amber-200 bg-amber-50"
-                      : "border-slate-200 bg-slate-50"
+                  item.key === "vehicle"
+                    ? "border-amber-200 bg-amber-50"
+                    : "border-slate-200 bg-slate-50"
                 }`}
               >
                 <div className={`flex items-center gap-2 text-sm font-semibold ${item.color}`}>

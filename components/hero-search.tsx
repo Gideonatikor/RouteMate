@@ -75,12 +75,6 @@ const highlights = [
     icon: Clock3,
     color: "text-sky-700",
   },
-  {
-    label: "You save",
-    getValue: (route: RouteRecord) => route.savings,
-    icon: Car,
-    color: "text-emerald-600",
-  },
 ] as const;
 
 export function HeroSearch({
@@ -452,7 +446,7 @@ export function HeroSearch({
           </button>
         </div>
 
-        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-5 grid gap-3 md:grid-cols-3">
           {highlights.map((item) => {
             const Icon = item.icon;
 
@@ -470,9 +464,7 @@ export function HeroSearch({
                     ? displayState.fare
                     : item.label === "Taxi/trotro"
                       ? displayState.vehicle
-                      : item.label === "Travel time"
-                        ? displayState.time
-                        : displayState.savings}
+                      : displayState.time}
                 </p>
               </div>
             );

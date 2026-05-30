@@ -508,17 +508,6 @@ export function GoogleMapView({
           </div>
         </div>
 
-        {/* Direction cue (bottom-left) */}
-        <div className="absolute bottom-2 left-2 z-[1000] max-w-[65%] rounded-2xl sm:rounded-[24px] border border-slate-200 bg-white/96 p-2.5 sm:p-4 shadow-[0_12px_24px_rgba(15,23,42,0.06)] backdrop-blur-md sm:bottom-4 sm:left-4 sm:max-w-[280px]">
-          <p className="hidden text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 sm:block">
-            Direction cue
-          </p>
-          <p className="text-[11px] font-semibold leading-relaxed text-slate-900 sm:mt-2 sm:text-sm">
-            {locationContext.isAtDestination
-              ? `You are at ${route.destination}.`
-              : `Board at ${route.boardingPoint}, ride to ${route.alightingPoint}.`}
-          </p>
-        </div>
 
         {/* GPS locate-me button */}
         <div className="absolute right-4 z-[1000] flex flex-col gap-2" style={{ top: "50%", transform: "translateY(-50%)" }}>

@@ -53,6 +53,11 @@ export default function HomePage() {
   const [isLiveTracking, setIsLiveTracking] = useState(false);
   const [isRouteLoading, setIsRouteLoading] = useState(false);
   
+  const [isDemoMode] = useState(
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('demo') === '1'
+  );
+
   // Refs for tracking real-time ETA
   const watchIdRef = useRef<number | null>(null);
   const initialEtaRef = useRef<number | null>(null);
@@ -265,6 +270,24 @@ export default function HomePage() {
       initialEtaRef.current = baseEta;
     }
 
+    // Demo mode: simulate movement so the ETA countdown fires on stage
+    if (isDemoMode) {
+      setIsLiveTracking(true);
+      setToastMessage("📍 Live tracking started! ETA will update as you move.");
+      let remaining = 30;
+      setEtaSeconds(remaining);
+      const interval = window.setInterval(() => {
+        remaining -= 1;
+        if (remaining <= 0) {
+          clearInterval(interval);
+          setEtaSeconds(0);
+        } else {
+          setEtaSeconds(remaining);
+        }
+      }, 1000);
+      return;
+    }
+
     // 2. Start Live GPS Tracking
     if (!navigator.geolocation) {
       setToastMessage("Live ETA relies on GPS, which isn't supported on this device.");
@@ -346,6 +369,15 @@ export default function HomePage() {
     const timeout = window.setTimeout(() => setArrivalAlert(null), 8000);
     return () => window.clearTimeout(timeout);
   }, [arrivalAlert]);
+
+  // Ctrl+Shift+A: emergency escape hatch to fire arrival banner instantly during demo
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'A') setEtaSeconds(0);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   // Reset ETA and tracking when route changes
   useEffect(() => {
