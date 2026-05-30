@@ -408,7 +408,7 @@ export default function HomePage() {
           <div className="flex items-center gap-3">
             <div className="relative flex h-11 w-11 shrink-0 overflow-hidden rounded-2xl border border-sky-100 shadow-[0_8px_20px_rgba(14,165,233,0.1)] dark:border-sky-950">
               <img
-                src="/logo.png"
+                src="/logo-bus.png"
                 alt="RouteMate Logo"
                 className="h-full w-full object-cover"
               />
