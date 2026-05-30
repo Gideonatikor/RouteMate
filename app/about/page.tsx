@@ -93,7 +93,7 @@ export default function AboutPage() {
         <motion.div {...fadeUp} className="mt-10 text-center">
           <div className="relative mx-auto mb-6 flex h-28 w-28 overflow-hidden rounded-[32px] border border-sky-200/80 shadow-[0_20px_48px_rgba(14,165,233,0.3)] transition-transform duration-300 hover:scale-105 dark:border-sky-850 dark:shadow-[0_20px_48px_rgba(14,165,233,0.15)]">
             <img
-              src="/logo-bus.png"
+              src="/logo-bus-transparent.png"
               alt="RouteMate Logo"
               className="h-full w-full object-cover"
             />
