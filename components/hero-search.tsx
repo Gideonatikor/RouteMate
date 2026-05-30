@@ -29,8 +29,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 type HeroSearchProps = {
   query: string;
-  route: RouteRecord;
-  locationContext: RouteLocationContext;
+  route: RouteRecord | null;
+  locationContext: RouteLocationContext | null;
   selectedLocationId: UserLocationId;
   selectedOptionKey: null | RouteOptionKey;
   gpsDetectedLabel: string | null;
@@ -336,7 +336,7 @@ export function HeroSearch({
           </div>
 
           {/* Walking direction to boarding point */}
-          {!locationContext.isAtDestination && !locationContext.isAtBoardingPoint && (
+          {locationContext && !locationContext.isAtDestination && !locationContext.isAtBoardingPoint && (
             <div className="rounded-[22px] border border-amber-200 bg-amber-50/60 px-4 py-3">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">
                 🚶 Walking directions
@@ -431,7 +431,8 @@ export function HeroSearch({
           <button
             type="button"
             onClick={onReverseRoute}
-            className="inline-flex h-[52px] items-center justify-center gap-2 rounded-[20px] border border-emerald-200 bg-white px-5 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-50"
+            disabled={!route}
+            className="inline-flex h-[52px] items-center justify-center gap-2 rounded-[20px] border border-emerald-200 bg-white px-5 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           >
             <ArrowRight className="h-4 w-4 rotate-180 text-emerald-500" />
             Return Trip
@@ -439,7 +440,8 @@ export function HeroSearch({
           <button
             type="button"
             onClick={onLostMode}
-            className="inline-flex h-[52px] items-center justify-center gap-2 rounded-[20px] border border-sky-200 bg-white px-5 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:border-amber-300"
+            disabled={!route}
+            className="inline-flex h-[52px] items-center justify-center gap-2 rounded-[20px] border border-sky-200 bg-white px-5 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:border-amber-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           >
             <LocateFixed className="h-4 w-4 text-amber-500" />
             I'm Lost

@@ -8,7 +8,7 @@ import {
   getPlaceCoordinates,
   getRouteWaypoints,
 } from "@/lib/coordinates";
-import type { RouteLocationContext } from "@/lib/location-context";
+import type { RouteLocationContext, UserLocationId } from "@/lib/location-context";
 import type { RouteRecord } from "@/lib/mock-data";
 import {
   getRouteDisplayState,
@@ -19,11 +19,12 @@ import {
 /* ── Props ───────────────────────────────────────────────────── */
 
 type GoogleMapViewProps = {
-  route: RouteRecord;
-  locationContext: RouteLocationContext;
+  route: RouteRecord | null;
+  locationContext: RouteLocationContext | null;
   lostMode?: boolean;
   compact?: boolean;
   selectedOptionKey?: null | RouteOptionKey;
+  selectedLocationId?: UserLocationId;
 };
 
 /* ── SVG templates ──────────────────────────────────────────── */
@@ -71,6 +72,7 @@ export function GoogleMapView({
   lostMode = false,
   compact = false,
   selectedOptionKey = null,
+  selectedLocationId = "knust-main-gate",
 }: GoogleMapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -83,7 +85,7 @@ export function GoogleMapView({
   const [gpsActive, setGpsActive] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
 
-  const selectedOption = getSelectedOption(route, selectedOptionKey);
+  const selectedOption = route ? getSelectedOption(route, selectedOptionKey) : null;
   const displayState = getRouteDisplayState(
     route,
     selectedOption,
@@ -91,13 +93,18 @@ export function GoogleMapView({
   );
 
   // Coordinates
-  const userCoords = getLocationCoordinates(locationContext.locationId);
-  const boardingCoords = getPlaceCoordinates(route.boardingPoint);
-  const alightingCoords = getPlaceCoordinates(route.alightingPoint);
-  const destinationCoords = getPlaceCoordinates(route.destination);
-  const landmarkCoords = getPlaceCoordinates(
-    locationContext.nearestLandmarkName,
-  );
+  const userCoords = locationContext?.locationId
+    ? getLocationCoordinates(locationContext.locationId)
+    : selectedLocationId
+      ? getLocationCoordinates(selectedLocationId)
+      : { lat: 6.6745, lng: -1.5716 };
+
+  const boardingCoords = route ? getPlaceCoordinates(route.boardingPoint) : { lat: 0, lng: 0 };
+  const alightingCoords = route ? getPlaceCoordinates(route.alightingPoint) : { lat: 0, lng: 0 };
+  const destinationCoords = route ? getPlaceCoordinates(route.destination) : { lat: 0, lng: 0 };
+  const landmarkCoords = (route && locationContext?.nearestLandmarkName)
+    ? getPlaceCoordinates(locationContext.nearestLandmarkName)
+    : { lat: 0, lng: 0 };
 
   /* Create map once — dynamically load Leaflet */
   useEffect(() => {
@@ -113,8 +120,10 @@ export function GoogleMapView({
       leafletRef.current = Leaf.default;
       const Lf = Leaf.default;
 
+      const mapCenter = route ? boardingCoords : userCoords;
+
       const map = Lf.map(containerRef.current, {
-        center: [boardingCoords.lat, boardingCoords.lng],
+        center: [mapCenter.lat, mapCenter.lng],
         zoom: 14,
         zoomControl: false,
         attributionControl: false,
@@ -276,6 +285,24 @@ export function GoogleMapView({
 
     const makeDivIcon = (html: string, size: number) =>
       Lf.divIcon({ html, className: "", iconSize: [size, size], iconAnchor: [size / 2, size / 2], popupAnchor: [0, -size / 2] });
+
+    if (!route || !locationContext) {
+      if (userCoords) {
+        Lf.marker(toLL(userCoords), {
+          icon: makeDivIcon(circleSvg("📍", "#f0f9ff", "#0284c7", 42), 42),
+          zIndexOffset: 800,
+        })
+          .bindPopup(
+            `<div style="font-family:system-ui;min-width:140px;">
+              <p style="margin:0;font-weight:700;font-size:13px;color:#0369a1;">📍 Starting Location</p>
+              <p style="margin:4px 0 0;font-size:12px;color:#475569;">Ready to route from here</p>
+            </div>`
+          )
+          .addTo(group);
+        map.setView(toLL(userCoords), 14, { animate: true });
+      }
+      return;
+    }
 
     /* ── Route polylines (use real road waypoints when available) ── */
     const activeOptionKey = selectedOptionKey ?? "balanced";
@@ -476,14 +503,16 @@ export function GoogleMapView({
     map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
   }, [
     ready,
-    route.id,
-    route.boardingPoint,
-    route.alightingPoint,
-    route.destination,
-    locationContext.locationId,
-    locationContext.nearestLandmarkName,
+    route?.id,
+    route?.boardingPoint,
+    route?.alightingPoint,
+    route?.destination,
+    locationContext?.locationId,
+    locationContext?.nearestLandmarkName,
     selectedOptionKey,
     lostMode,
+    userCoords.lat,
+    userCoords.lng,
   ]);
 
   /* ── Render ───────────────────────────────────────────────── */
@@ -508,46 +537,52 @@ export function GoogleMapView({
           <p className="text-xs font-semibold text-slate-900 sm:mt-2 sm:text-sm">
             {lostMode
               ? "Recovery route"
-              : `${locationContext.originLabel} → ${route.destination}`}
+              : route && locationContext
+                ? `${locationContext.originLabel} → ${route.destination}`
+                : "No route selected"}
           </p>
         </div>
 
         {/* Mobile-only compact route badge (top-right) */}
-        <div className="absolute right-2 top-2 z-[1000] flex flex-col gap-1 sm:hidden">
-          <div className="rounded-xl border border-emerald-200 bg-white/95 px-2.5 py-1.5 text-center shadow-md backdrop-blur-md">
-            <p className="text-[10px] font-semibold text-emerald-700">{displayState.fare}</p>
+        {route && (
+          <div className="absolute right-2 top-2 z-[1000] flex flex-col gap-1 sm:hidden">
+            <div className="rounded-xl border border-emerald-200 bg-white/95 px-2.5 py-1.5 text-center shadow-md backdrop-blur-md">
+              <p className="text-[10px] font-semibold text-emerald-700">{displayState.fare}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white/95 px-2.5 py-1.5 text-center shadow-md backdrop-blur-md">
+              <p className="text-[10px] font-semibold text-slate-700">{displayState.time}</p>
+            </div>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-white/95 px-2.5 py-1.5 text-center shadow-md backdrop-blur-md">
-            <p className="text-[10px] font-semibold text-slate-700">{displayState.time}</p>
-          </div>
-        </div>
+        )}
 
         {/* Route snapshot overlay (top-right) — hidden on small screens, shown in cards below */}
-        <div className="absolute right-2 top-2 z-[1000] hidden w-[170px] rounded-2xl border border-slate-200 bg-white/96 p-3 shadow-[0_12px_24px_rgba(15,23,42,0.06)] backdrop-blur-md sm:right-4 sm:top-4 sm:block sm:w-[190px] sm:rounded-[22px] sm:p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-            Route snapshot
-          </p>
-          <div className="mt-2 space-y-2 text-xs sm:mt-3 sm:space-y-3 sm:text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">Fare</span>
-              <span className="font-semibold text-emerald-700">
-                {displayState.fare}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">Time</span>
-              <span className="font-semibold text-slate-900">
-                {displayState.time}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">Vehicle</span>
-              <span className="font-semibold text-sky-700">
-                {displayState.vehicle}
-              </span>
+        {route && (
+          <div className="absolute right-2 top-2 z-[1000] hidden w-[170px] rounded-2xl border border-slate-200 bg-white/96 p-3 shadow-[0_12px_24px_rgba(15,23,42,0.06)] backdrop-blur-md sm:right-4 sm:top-4 sm:block sm:w-[190px] sm:rounded-[22px] sm:p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Route snapshot
+            </p>
+            <div className="mt-2 space-y-2 text-xs sm:mt-3 sm:space-y-3 sm:text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-600">Fare</span>
+                <span className="font-semibold text-emerald-700">
+                  {displayState.fare}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-600">Time</span>
+                <span className="font-semibold text-slate-900">
+                  {displayState.time}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-600">Vehicle</span>
+                <span className="font-semibold text-sky-700">
+                  {displayState.vehicle}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
 
         {/* GPS locate-me button */}

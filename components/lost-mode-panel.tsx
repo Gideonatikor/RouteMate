@@ -15,8 +15,8 @@ import { GoogleMapView } from "@/components/google-map-view";
 import { GlassCard } from "@/components/ui/glass-card";
 
 type LostModePanelProps = {
-  route: RouteRecord;
-  locationContext: RouteLocationContext;
+  route: RouteRecord | null;
+  locationContext: RouteLocationContext | null;
   isActive: boolean;
   activeStepIndex: number;
   onActivate: () => void;
@@ -31,6 +31,24 @@ export function LostModePanel({
   activeStepIndex,
   onActivate,
 }: LostModePanelProps) {
+  if (!route || !locationContext) {
+    return (
+      <GlassCard className="p-8 text-center space-y-4">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950">
+          <LocateFixed className="h-6 w-6 text-amber-500" />
+        </div>
+        <div className="max-w-md mx-auto space-y-2">
+          <h3 className="font-display text-xl font-bold text-slate-950 dark:text-white">
+            Lost Mode Ready
+          </h3>
+          <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+            Enter a destination above first. If you get confused or lost along the way, activate Lost Mode to guide you back to the nearest landmark and boarding point.
+          </p>
+        </div>
+      </GlassCard>
+    );
+  }
+
   const landmark = route.nearbyLandmarks.find(
     (item) => item.name === locationContext.nearestLandmarkName,
   ) ?? route.nearbyLandmarks[0];

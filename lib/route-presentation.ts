@@ -44,10 +44,10 @@ function extractWalkMeta(step: string | undefined, fallback: string) {
 }
 
 export function getSelectedOption(
-  route: RouteRecord,
+  route: RouteRecord | null | undefined,
   selectedOptionKey: null | RouteOptionKey,
 ): null | RouteOption {
-  if (!selectedOptionKey) {
+  if (!route || !selectedOptionKey) {
     return null;
   }
 
@@ -55,10 +55,24 @@ export function getSelectedOption(
 }
 
 export function getRouteDisplayState(
-  route: RouteRecord,
+  route: RouteRecord | null | undefined,
   selectedOption?: null | RouteOption,
-  locationContext?: RouteLocationContext,
+  locationContext?: RouteLocationContext | null,
 ): RouteDisplayState {
+  if (!route) {
+    return {
+      fare: "—",
+      time: "—",
+      savings: "—",
+      vehicle: "Not selected",
+      walkingDistance: "—",
+      boardAt: "—",
+      alightAt: "—",
+      driverPhrase: "—",
+      bestRouteLabel: "No route selected",
+    };
+  }
+
   if (locationContext?.isAtDestination) {
     return {
       fare: "GH₵0.00",
