@@ -1,4 +1,4 @@
-﻿export type RouteOption = {
+export type RouteOption = {
   label: "Cheapest Route" | "Fastest Route" | "Balanced Route";
   fare: string;
   time: string;
@@ -46,88 +46,6 @@ export type RouteRecord = {
 };
 
 export const routes: RouteRecord[] = [
-  {
-    id: "kjtl",
-    from: "KNUST Campus",
-    to: "KJTL",
-    destination: "KJTL",
-    aliases: ["kjtl", "kjtl junction", "kumasi jtl", "k.j.t.l"],
-    boardingPoint: "Engineering Gate",
-    alightingPoint: "KJTL Junction",
-    vehicleType: "Ayeduase Taxi",
-    fareRange: "GH₵3.50 - GH₵5.00",
-    estimatedTime: "14 - 18 min",
-    uberEstimate: "GH₵22 - GH₵29",
-    savings: "Save about GH₵20",
-    driverPhrase: "Boss, KJTL side.",
-    safetyNote: "Board from the front row near the security post after 7pm for better lighting.",
-    confidence: "High",
-    lastVerified: "May 2026",
-    usersConfirmed: 37,
-    routeTone: "Quickest campus exit for lectures, printing, and food runs.",
-    steps: [
-      "Walk to Engineering Gate main roadside stop.",
-      "Join an Ayeduase taxi heading outward from campus.",
-      "Tell the driver you are going KJTL side before the car fills.",
-      "Alight at KJTL Junction and cross with the pedestrian island.",
-      "Walk 2 minutes to the KJTL frontage.",
-    ],
-    options: {
-      cheapest: {
-        label: "Cheapest Route",
-        fare: "GH₵3.50",
-        time: "18 min",
-        comfort: "Shared ride",
-        walkingDistance: "6 min walk",
-        transportType: "Ayeduase Taxi",
-        highlight: "Lowest fare if you board from the first rank.",
-      },
-      fastest: {
-        label: "Fastest Route",
-        fare: "GH₵5.00",
-        time: "14 min",
-        comfort: "Direct",
-        walkingDistance: "3 min walk",
-        transportType: "Direct Taxi",
-        highlight: "Best when you are running late for class or pickups.",
-      },
-      balanced: {
-        label: "Balanced Route",
-        fare: "GH₵4.00",
-        time: "16 min",
-        comfort: "Moderate",
-        walkingDistance: "4 min walk",
-        transportType: "Ayeduase Taxi",
-        highlight: "Best mix of price, speed, and predictable drop-off.",
-      },
-    },
-    nearbyLandmarks: [
-      {
-        name: "Engineering Gate",
-        walkTime: "3 min",
-        clue: "Blue pedestrian bridge and campus security booth",
-        transportHint: "Pick an Ayeduase taxi from the curb facing town.",
-        phrase: "Boss, KJTL side.",
-        exitPoint: "KJTL Junction",
-      },
-      {
-        name: "Republic Hall Junction",
-        walkTime: "6 min",
-        clue: "Large hall sign with busy evening food stands",
-        transportHint: "Take any car calling Ayeduase or Kotei line.",
-        phrase: "KJTL junction, please.",
-        exitPoint: "Roman Ridge turnoff",
-      },
-      {
-        name: "Commercial Area Shell",
-        walkTime: "5 min",
-        clue: "Fuel station with ATM and bright amber canopy",
-        transportHint: "Join Ayeduase-bound taxis at the edge of the station.",
-        phrase: "Driver, KJTL side make I drop there.",
-        exitPoint: "KJTL Junction",
-      },
-    ],
-  },
   {
     id: "tech-junction",
     from: "KNUST Campus",
@@ -541,7 +459,7 @@ export const routes: RouteRecord[] = [
 ];
 
 export const driverPhraseExamples = [
-  "Boss, KJTL side.",
+  "Boss, Kejetia side.",
   "Mate, Kejetia, I will alight at Roman Hill.",
   "Ayeduase junction, please.",
   "Tech Junction, main station side.",

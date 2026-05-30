@@ -1,3 +1,5 @@
+@import "leaflet/dist/leaflet.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -82,4 +84,59 @@ body::after {
   .section-shell {
     @apply mx-auto w-full max-w-[84rem] px-4 sm:px-6 lg:px-8;
   }
+}
+
+/* ── Dark mode overrides ── */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background:
+    radial-gradient(circle at top left, rgba(6, 182, 212, 0.06), transparent 22%),
+    radial-gradient(circle at 84% 12%, rgba(37, 99, 235, 0.06), transparent 22%),
+    linear-gradient(180deg, #0c1222 0%, #0f172a 48%, #0c1222 100%);
+  color: #e2e8f0;
+}
+
+html.dark body::before {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.04) 1px, transparent 1px);
+  opacity: 0.15;
+}
+
+html.dark body::after {
+  background:
+    radial-gradient(circle at 18% 20%, rgba(34, 211, 238, 0.04), transparent 28%),
+    radial-gradient(circle at 82% 16%, rgba(37, 99, 235, 0.04), transparent 24%);
+}
+
+html.dark .glass-panel {
+  @apply border-slate-700;
+  background:
+    linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.92)),
+    linear-gradient(135deg, rgba(51, 65, 85, 0.5), transparent 58%);
+  box-shadow:
+    inset 0 1px 0 rgba(51, 65, 85, 0.5),
+    0 18px 60px rgba(0, 0, 0, 0.25),
+    0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+html.dark .chip {
+  @apply border-slate-600;
+  background: rgba(30, 41, 59, 0.8);
+  color: #cbd5e1;
+}
+
+html.dark * {
+  scrollbar-color: rgba(2, 132, 199, 0.25) transparent;
+}
+
+html.dark ::selection {
+  background: rgba(6, 182, 212, 0.3);
+}
+
+html.dark input::placeholder {
+  color: #94a3b8;
 }

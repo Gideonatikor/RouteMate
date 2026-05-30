@@ -57,12 +57,12 @@ export const userLocationOptions: UserLocationOption[] = [
   {
     id: "engineering-gate",
     label: "Engineering Gate",
-    hint: "Campus-side landmark for Ayeduase and KJTL routes",
+    hint: "Campus-side landmark for Ayeduase routes",
   },
   {
     id: "ayeduase-gate",
     label: "Ayeduase Gate",
-    hint: "Useful for Ayeduase, Kotei, and KJTL side access",
+    hint: "Useful for Ayeduase, Kotei, and side access",
   },
   {
     id: "commercial-area",
@@ -132,7 +132,7 @@ export const transportHubs: TransportHub[] = [
   },
   {
     name: "Ayeduase Gate",
-    use: "Route toward Ayeduase, Kotei, and KJTL",
+    use: "Route toward Ayeduase and Kotei",
     category: "origin",
   },
   {

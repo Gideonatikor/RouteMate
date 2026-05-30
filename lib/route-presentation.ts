@@ -119,7 +119,7 @@ export function buildJourneySteps(
     `Start from your current location and move to ${route.boardingPoint}. Use ${landmark.name} as your visual reference point.`;
   const walkMeta = locationContext?.walkTime ?? landmark.walkTime;
 
-  return [
+  const steps: JourneyStep[] = [
     {
       id: "start",
       kind: "walk",
@@ -156,18 +156,44 @@ export function buildJourneySteps(
       fromLabel: route.boardingPoint,
       toLabel: route.alightingPoint,
     },
-    {
-      id: "arrive",
-      kind: "arrive",
-      title: "Walk to final destination",
-      instruction: lastStep.startsWith("Walk")
-        ? lastStep
-        : `Follow the walking direction from ${route.alightingPoint} to ${route.destination}.`,
-      meta: extractWalkMeta(lastStep, "2 min walk"),
+  ];
+
+  // Insert transfer step for multi-leg routes (e.g., Adum via Roman Hill)
+  const hasTransfer =
+    route.options.cheapest.comfort.toLowerCase().includes("transfer") ||
+    route.steps.some((s) => s.toLowerCase().includes("switch") || s.toLowerCase().includes("transfer"));
+
+  if (hasTransfer) {
+    // Find transfer point name from steps
+    const transferStep = route.steps.find(
+      (s) => s.toLowerCase().includes("switch") || s.toLowerCase().includes("transfer"),
+    );
+    const transferName = transferStep?.match(/at\s+([^.]+)/i)?.[1]?.trim() ?? "the transfer point";
+
+    steps.push({
+      id: "transfer",
+      kind: "walk",
+      title: `🔄 Transfer at ${transferName}`,
+      instruction: `Switch to the next vehicle here. ${transferStep ?? `Look for the loading area toward ${route.destination}.`}`,
+      meta: "Transfer",
       fromLabel: route.alightingPoint,
       toLabel: route.destination,
-    },
-  ];
+    });
+  }
+
+  steps.push({
+    id: "arrive",
+    kind: "arrive",
+    title: "Walk to final destination",
+    instruction: lastStep.startsWith("Walk")
+      ? lastStep
+      : `Follow the walking direction from ${route.alightingPoint} to ${route.destination}.`,
+    meta: extractWalkMeta(lastStep, "2 min walk"),
+    fromLabel: route.alightingPoint,
+    toLabel: route.destination,
+  });
+
+  return steps;
 }
 
 export function getBestRouteLabel(

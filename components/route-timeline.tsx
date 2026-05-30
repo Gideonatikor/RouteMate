@@ -41,12 +41,17 @@ export function RouteTimeline({
     getSelectedOption(route, selectedOptionKey),
     locationContext,
   );
-  const pathStops = [
-    locationContext.originLabel,
-    route.boardingPoint,
-    route.alightingPoint,
-    route.destination,
-  ];
+  // Build path stops dynamically from steps (shows transfers too)
+  const pathStops: string[] = [];
+  for (const step of steps) {
+    if (step.fromLabel && !pathStops.includes(step.fromLabel)) {
+      pathStops.push(step.fromLabel);
+    }
+  }
+  // Always end with destination
+  if (!pathStops.includes(route.destination)) {
+    pathStops.push(route.destination);
+  }
 
   return (
     <GlassCard className="p-5 sm:p-6">

@@ -78,18 +78,6 @@ const originRouteOverrides: Partial<Record<UserLocationId, Partial<Record<string
     },
   },
   "engineering-gate": {
-    kjtl: {
-      from: "Engineering Gate",
-      boardingPoint: "Engineering Gate",
-      nearbyLandmark: {
-        name: "Engineering Gate",
-        walkTime: "0 - 1 min",
-        clue: "Blue pedestrian bridge and campus security booth",
-        transportHint: "Pick an Ayeduase taxi from the curb facing town.",
-        phrase: "Boss, KJTL side.",
-        exitPoint: "KJTL Junction",
-      },
-    },
     ayeduase: {
       from: "Engineering Gate",
       boardingPoint: "Engineering Gate",
@@ -104,30 +92,6 @@ const originRouteOverrides: Partial<Record<UserLocationId, Partial<Record<string
     },
   },
   "ayeduase-gate": {
-    kjtl: {
-      from: "Ayeduase Gate",
-      boardingPoint: "Ayeduase Gate",
-      vehicleType: "Ayeduase / KJTL Taxi",
-      fareRange: "GH₵3.00 - GH₵4.50",
-      estimatedTime: "10 - 14 min",
-      savings: "Save about GH₵18",
-      driverPhrase: "Boss, KJTL junction side.",
-      steps: [
-        "Stand at Ayeduase Gate where taxis slow down near the campus edge.",
-        "Pick a taxi heading toward KJTL or Ayeduase side.",
-        "Tell the driver you will alight at KJTL Junction.",
-        "Alight at KJTL Junction.",
-        "Walk 2 minutes to KJTL.",
-      ],
-      nearbyLandmark: {
-        name: "Ayeduase Gate",
-        walkTime: "0 - 1 min",
-        clue: "Campus exit toward Ayeduase and Kotei side",
-        transportHint: "Use taxis calling Ayeduase, Kotei, or KJTL side.",
-        phrase: "Boss, KJTL junction side.",
-        exitPoint: "KJTL Junction",
-      },
-    },
     ayeduase: {
       from: "Ayeduase Gate",
       boardingPoint: "Ayeduase Gate",

@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import type { RouteLocationContext } from "@/lib/location-context";
 import type { RouteRecord } from "@/lib/mock-data";
-import { MockMap } from "@/components/mock-map";
+import { GoogleMapView } from "@/components/google-map-view";
 import { GlassCard } from "@/components/ui/glass-card";
 
 type LostModePanelProps = {
@@ -158,11 +158,10 @@ export function LostModePanel({
       </GlassCard>
 
       <div className="space-y-4">
-        <MockMap
+        <GoogleMapView
           route={route}
           locationContext={locationContext}
           lostMode
-          activeLandmarkIndex={Math.min(activeStepIndex, 1)}
           compact
         />
 
