@@ -166,6 +166,102 @@ export const routeWaypoints: Record<string, RouteWaypoints> = {
       { lat: 6.6890, lng: -1.6230 }, // Kejetia
     ],
   },
+  "adum-cheapest": {
+    walkToBoarding: [
+      { lat: 6.6745, lng: -1.5710 },
+      { lat: 6.6742, lng: -1.5715 },
+      { lat: 6.6738, lng: -1.5722 }, // Conti Bus Stop
+    ],
+    vehiclePath: [
+      { lat: 6.6738, lng: -1.5722 },
+      { lat: 6.6750, lng: -1.5740 },
+      { lat: 6.6768, lng: -1.5760 },
+      { lat: 6.6790, lng: -1.5780 },
+      { lat: 6.6815, lng: -1.5810 },
+      { lat: 6.6835, lng: -1.5850 },
+      { lat: 6.6850, lng: -1.5900 },
+      { lat: 6.6858, lng: -1.5950 },
+      { lat: 6.6865, lng: -1.6010 },
+      { lat: 6.6870, lng: -1.6070 },
+      { lat: 6.6878, lng: -1.6120 },
+      { lat: 6.6885, lng: -1.6150 }, // Roman Hill transfer area
+    ],
+    walkToDestination: [
+      { lat: 6.6928, lng: -1.6167 }, // Adum PZ
+      { lat: 6.6930, lng: -1.6169 },
+      { lat: 6.6932, lng: -1.6170 }, // Adum
+    ],
+    // Adum uses a transfer at Roman Hill for cheapest option
+    transferPoint: { lat: 6.6878, lng: -1.6150 }, // Roman Hill
+    transferWalk: [
+      { lat: 6.6885, lng: -1.6150 },
+      { lat: 6.6890, lng: -1.6152 },
+      { lat: 6.6895, lng: -1.6155 },
+    ],
+    vehiclePath2: [
+      { lat: 6.6895, lng: -1.6155 },
+      { lat: 6.6905, lng: -1.6158 },
+      { lat: 6.6915, lng: -1.6162 },
+      { lat: 6.6922, lng: -1.6165 },
+      { lat: 6.6928, lng: -1.6167 }, // Adum PZ
+    ],
+  },
+  "adum-balanced": {
+    walkToBoarding: [
+      { lat: 6.6745, lng: -1.5710 },
+      { lat: 6.6742, lng: -1.5715 },
+      { lat: 6.6738, lng: -1.5722 }, // Conti Bus Stop
+    ],
+    vehiclePath: [
+      { lat: 6.6738, lng: -1.5722 },
+      { lat: 6.6750, lng: -1.5740 },
+      { lat: 6.6768, lng: -1.5760 },
+      { lat: 6.6790, lng: -1.5780 },
+      { lat: 6.6815, lng: -1.5810 },
+      { lat: 6.6835, lng: -1.5850 },
+      { lat: 6.6850, lng: -1.5900 },
+      { lat: 6.6858, lng: -1.5950 },
+      { lat: 6.6865, lng: -1.6010 },
+      { lat: 6.6870, lng: -1.6070 },
+      { lat: 6.6878, lng: -1.6120 },
+      { lat: 6.6890, lng: -1.6145 },
+      { lat: 6.6905, lng: -1.6155 },
+      { lat: 6.6920, lng: -1.6162 },
+      { lat: 6.6928, lng: -1.6167 }, // Adum PZ directly
+    ],
+    walkToDestination: [
+      { lat: 6.6928, lng: -1.6167 }, // Adum PZ
+      { lat: 6.6930, lng: -1.6169 },
+      { lat: 6.6932, lng: -1.6170 }, // Adum
+    ],
+  },
+  "adum-fastest": {
+    walkToBoarding: [
+      { lat: 6.6745, lng: -1.5710 },
+      { lat: 6.6742, lng: -1.5715 },
+      { lat: 6.6738, lng: -1.5722 }, // Conti Bus Stop
+    ],
+    vehiclePath: [
+      { lat: 6.6738, lng: -1.5722 }, // Conti Bus Stop
+      { lat: 6.6748, lng: -1.5750 },
+      { lat: 6.6765, lng: -1.5800 },
+      { lat: 6.6782, lng: -1.5860 },
+      { lat: 6.6795, lng: -1.5900 },
+      { lat: 6.6802, lng: -1.5942 }, // Anloga Junction
+      { lat: 6.6812, lng: -1.5980 },
+      { lat: 6.6822, lng: -1.6030 },
+      { lat: 6.6832, lng: -1.6085 }, // Asafo Station
+      { lat: 6.6852, lng: -1.6120 },
+      { lat: 6.6880, lng: -1.6145 },
+      { lat: 6.6908, lng: -1.6155 },
+      { lat: 6.6928, lng: -1.6167 }, // Adum PZ
+    ],
+    walkToDestination: [
+      { lat: 6.6928, lng: -1.6167 }, // Adum PZ
+      { lat: 6.6930, lng: -1.6169 },
+      { lat: 6.6932, lng: -1.6170 }, // Adum
+    ],
+  },
   adum: {
     walkToBoarding: [
       { lat: 6.6745, lng: -1.5710 },
@@ -186,7 +282,11 @@ export const routeWaypoints: Record<string, RouteWaypoints> = {
       { lat: 6.6878, lng: -1.6120 },
       { lat: 6.6885, lng: -1.6150 }, // Roman Hill transfer area
     ],
-    walkToDestination: [],
+    walkToDestination: [
+      { lat: 6.6928, lng: -1.6167 }, // Adum PZ
+      { lat: 6.6930, lng: -1.6169 },
+      { lat: 6.6932, lng: -1.6170 }, // Adum
+    ],
     // Adum uses a transfer at Roman Hill for cheapest option
     transferPoint: { lat: 6.6878, lng: -1.6150 }, // Roman Hill
     transferWalk: [
@@ -513,12 +613,12 @@ export const routeWaypoints: Record<string, RouteWaypoints> = {
   },
 };
 
-/**
- * Get waypoints for a given route ID. Returns the segment arrays or
- * falls back to straight-line points.
- */
-export function getRouteWaypoints(routeId: string): RouteWaypoints | null {
-  return routeWaypoints[routeId] ?? null;
+export function getRouteWaypoints(
+  routeId: string,
+  optionKey?: null | string
+): RouteWaypoints | null {
+  const key = optionKey ? `${routeId}-${optionKey}` : routeId;
+  return routeWaypoints[key] ?? routeWaypoints[routeId] ?? null;
 }
 
 function normalize(value: string) {

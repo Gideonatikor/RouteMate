@@ -278,52 +278,93 @@ export function GoogleMapView({
       Lf.divIcon({ html, className: "", iconSize: [size, size], iconAnchor: [size / 2, size / 2], popupAnchor: [0, -size / 2] });
 
     /* ── Route polylines (use real road waypoints when available) ── */
-    const waypoints = getRouteWaypoints(route.id);
+    const activeOptionKey = selectedOptionKey ?? "balanced";
+    const optionKeys = ["cheapest", "balanced", "fastest"] as const;
 
-    if (waypoints) {
-      // Walking: user → boarding (dashed amber)
-      if (waypoints.walkToBoarding.length > 1) {
-        Lf.polyline(waypoints.walkToBoarding.map(toLL), {
-          color: "#f59e0b", weight: 4, opacity: 0.85,
-          dashArray: "8 10", lineCap: "round",
-        }).addTo(group);
+    // 1. Draw inactive alternative routes in background (slate-gray color)
+    optionKeys.forEach((optKey) => {
+      if (optKey === activeOptionKey) return; // skip active
+
+      const optWaypoints = getRouteWaypoints(route.id, optKey);
+      if (optWaypoints) {
+        // Alternative vehicle leg 1
+        if (optWaypoints.vehiclePath.length > 1) {
+          Lf.polyline(optWaypoints.vehiclePath.map(toLL), {
+            color: "#94a3b8", // Muted slate-gray
+            weight: 4,
+            opacity: 0.55,
+            lineCap: "round",
+          }).addTo(group);
+        }
+        // Alternative vehicle leg 2 (if it has transfer)
+        if (optWaypoints.vehiclePath2 && optWaypoints.vehiclePath2.length > 1) {
+          Lf.polyline(optWaypoints.vehiclePath2.map(toLL), {
+            color: "#94a3b8",
+            weight: 4,
+            opacity: 0.55,
+            lineCap: "round",
+          }).addTo(group);
+        }
       }
+    });
+
+    // 2. Draw active route in foreground
+    const activeWaypoints = getRouteWaypoints(route.id, activeOptionKey) ?? getRouteWaypoints(route.id);
+
+    if (activeWaypoints) {
+      // Walking: user → boarding (dashed slate-gray, dynamically anchored)
+      const walkToBoardingPath = activeWaypoints.walkToBoarding && activeWaypoints.walkToBoarding.length > 1
+        ? [userCoords, ...activeWaypoints.walkToBoarding.slice(1)]
+        : [userCoords, boardingCoords];
+
+      Lf.polyline(walkToBoardingPath.map(toLL), {
+        color: "#64748b", // Slate-gray
+        weight: 4,
+        opacity: 0.9,
+        dashArray: "6 8",
+        lineCap: "round",
+      }).addTo(group);
 
       // Vehicle: boarding → alighting (solid blue)
-      if (waypoints.vehiclePath.length > 1) {
-        Lf.polyline(waypoints.vehiclePath.map(toLL), {
+      if (activeWaypoints.vehiclePath.length > 1) {
+        Lf.polyline(activeWaypoints.vehiclePath.map(toLL), {
           color: "#2563eb", weight: 5, opacity: 0.9,
           lineCap: "round",
         }).addTo(group);
       }
 
       // Transfer walk (dashed red — for multi-leg routes)
-      if (waypoints.transferWalk && waypoints.transferWalk.length > 1) {
-        Lf.polyline(waypoints.transferWalk.map(toLL), {
-          color: "#ef4444", weight: 3, opacity: 0.8,
+      if (activeWaypoints.transferWalk && activeWaypoints.transferWalk.length > 1) {
+        Lf.polyline(activeWaypoints.transferWalk.map(toLL), {
+          color: "#ef4444", weight: 3.5, opacity: 0.8,
           dashArray: "6 8", lineCap: "round",
         }).addTo(group);
       }
 
       // Second vehicle leg (solid purple — for multi-leg routes)
-      if (waypoints.vehiclePath2 && waypoints.vehiclePath2.length > 1) {
-        Lf.polyline(waypoints.vehiclePath2.map(toLL), {
+      if (activeWaypoints.vehiclePath2 && activeWaypoints.vehiclePath2.length > 1) {
+        Lf.polyline(activeWaypoints.vehiclePath2.map(toLL), {
           color: "#7c3aed", weight: 5, opacity: 0.9,
           lineCap: "round",
         }).addTo(group);
       }
 
-      // Walking: alighting → destination (dashed amber)
-      if (waypoints.walkToDestination.length > 1) {
-        Lf.polyline(waypoints.walkToDestination.map(toLL), {
-          color: "#f59e0b", weight: 4, opacity: 0.85,
-          dashArray: "8 10", lineCap: "round",
-        }).addTo(group);
-      }
+      // Walking: alighting → destination (dashed slate-gray, dynamically anchored)
+      const walkToDestPath = activeWaypoints.walkToDestination && activeWaypoints.walkToDestination.length > 1
+        ? [...activeWaypoints.walkToDestination.slice(0, -1), destinationCoords]
+        : [alightingCoords, destinationCoords];
+
+      Lf.polyline(walkToDestPath.map(toLL), {
+        color: "#64748b", // Slate-gray
+        weight: 4,
+        opacity: 0.9,
+        dashArray: "6 8",
+        lineCap: "round",
+      }).addTo(group);
 
       // Transfer point marker
-      if (waypoints.transferPoint) {
-        Lf.marker(toLL(waypoints.transferPoint), {
+      if (activeWaypoints.transferPoint) {
+        Lf.marker(toLL(activeWaypoints.transferPoint), {
           icon: makeDivIcon(circleSvg("🔄", "#fef2f2", "#ef4444"), 38),
           zIndexOffset: 650,
         })
@@ -338,16 +379,16 @@ export function GoogleMapView({
     } else {
       // Fallback: straight lines
       Lf.polyline([toLL(userCoords), toLL(boardingCoords)], {
-        color: "#f59e0b", weight: 4, opacity: 0.85,
-        dashArray: "8 10", lineCap: "round",
+        color: "#64748b", weight: 4, opacity: 0.9,
+        dashArray: "6 8", lineCap: "round",
       }).addTo(group);
       Lf.polyline([toLL(boardingCoords), toLL(alightingCoords)], {
         color: "#2563eb", weight: 5, opacity: 0.9,
         lineCap: "round",
       }).addTo(group);
       Lf.polyline([toLL(alightingCoords), toLL(destinationCoords)], {
-        color: "#f59e0b", weight: 4, opacity: 0.85,
-        dashArray: "8 10", lineCap: "round",
+        color: "#64748b", weight: 4, opacity: 0.9,
+        dashArray: "6 8", lineCap: "round",
       }).addTo(group);
     }
 
@@ -550,12 +591,16 @@ export function GoogleMapView({
           </p>
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="h-0.5 w-6 rounded-full border-t-2 border-dashed border-amber-400" />
+              <span className="h-0.5 w-6 rounded-full border-t-2 border-dashed border-slate-400" />
               Walking
             </div>
             <div className="flex items-center gap-2">
               <span className="h-0.5 w-6 rounded-full bg-blue-600" />
-              Vehicle
+              Active Route
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-0.5 w-6 rounded-full bg-slate-400" />
+              Alternative Route
             </div>
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
