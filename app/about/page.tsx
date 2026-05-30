@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Bus,
+  BusFront,
   Clock3,
   Compass,
   Globe,
@@ -12,10 +13,10 @@ import {
   MapPin,
   MessageCircle,
   Navigation,
+  Route,
   Search,
   Shield,
   Smartphone,
-  Sparkles,
   Users,
   Wallet,
 } from "lucide-react";
@@ -90,8 +91,9 @@ export default function AboutPage() {
         </Link>
 
         <motion.div {...fadeUp} className="mt-10 text-center">
-          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-sky-500 to-blue-600 shadow-xl shadow-sky-500/20">
-            <Sparkles className="h-10 w-10 text-white" />
+          <div className="relative mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-sky-500 to-blue-600 shadow-xl shadow-sky-500/20">
+            <Route className="absolute h-14 w-14 opacity-30 text-sky-100" />
+            <BusFront className="relative h-9 w-9 text-white z-10" />
           </div>
           <h1 className="text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl dark:text-white">
             About RouteMate

@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { Info, Sparkles } from "lucide-react";
+import { Info, Route, BusFront } from "lucide-react";
 import { DarkModeToggle } from "@/components/dark-mode-toggle";
 import { FeedbackModal } from "@/components/feedback-modal";
 import { ShareRouteButton } from "@/components/share-route-button";
@@ -406,8 +406,9 @@ export default function HomePage() {
       <section className="section-shell pt-5 sm:pt-7">
         <nav className="flex items-center justify-between rounded-full border border-slate-200 bg-white/85 px-4 py-3 shadow-[0_14px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/85 sm:px-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 text-sky-700 shadow-[0_14px_28px_rgba(14,165,233,0.12)] dark:border-sky-800 dark:bg-sky-950 dark:text-sky-300">
-              <Sparkles className="h-5 w-5" />
+            <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 text-sky-700 shadow-[0_14px_28px_rgba(14,165,233,0.12)] dark:border-sky-800 dark:bg-sky-950 dark:text-sky-300">
+              <Route className="absolute h-7 w-7 opacity-25 text-sky-500 dark:text-sky-400" />
+              <BusFront className="relative h-5 w-5 z-10" />
             </div>
             <div>
               <div className="font-display text-lg text-slate-950">RouteMate</div>
