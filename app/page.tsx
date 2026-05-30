@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { Banknote, Info, ShieldAlert, Sparkles, Star, Users } from "lucide-react";
+import { Info, Sparkles } from "lucide-react";
 import { DarkModeToggle } from "@/components/dark-mode-toggle";
 import { ShareRouteButton } from "@/components/share-route-button";
 import { DriverPhraseCard } from "@/components/driver-phrase-card";
@@ -16,23 +16,21 @@ import { RouteSummaryCard } from "@/components/route-summary-card";
 import { RouteTimeline } from "@/components/route-timeline";
 import { SafetyTrustCard } from "@/components/safety-trust-card";
 import { SectionHeading } from "@/components/section-heading";
-import { TransportHubs } from "@/components/transport-hubs";
+
 import { GlassCard } from "@/components/ui/glass-card";
 import {
   getRouteLocationContext,
-  transportHubs,
   userLocationOptions,
   type UserLocationId,
 } from "@/lib/location-context";
 import {
-  driverPhraseExamples,
-  reportActions,
   routes,
   type RouteRecord,
 } from "@/lib/mock-data";
 import { findRouteForOriginAndDestination } from "@/lib/route-matching";
 import type { RouteOptionKey } from "@/lib/route-presentation";
 import { findNearestLocation } from "@/lib/coordinates";
+import { kumasiPlaces } from "@/lib/kumasi-places";
 
 export default function HomePage() {
   const [query, setQuery] = useState("Kejetia");
@@ -130,11 +128,11 @@ export default function HomePage() {
     const matchedRoute = findRouteForOriginAndDestination(value, selectedLocationId);
 
     if (!matchedRoute) {
+      setQuery(value);
       setRouteNotFound(value);
       setLostModeActive(false);
       setLostStepIndex(0);
       setSelectedOptionKey(null);
-      setToastMessage(`Route not found yet from ${locationContext.originLabel}.`);
       return;
     }
 
@@ -430,24 +428,59 @@ export default function HomePage() {
       </section>
 
       <section id="search" className="section-shell space-y-8 pb-20">
-        <SectionHeading
-          eyebrow="Route Explanation"
-          title="The route should be understandable immediately, not hidden inside decorative cards."
-          description="This layout prioritizes the six questions that matter most: where to start, what vehicle to pick, what to tell the driver, where to alight, how much it costs, and how long it takes."
-        />
 
         {routeNotFound ? (
           <GlassCard className="p-8 sm:p-10">
-            <div className="max-w-2xl space-y-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
-                Route search
-              </p>
-              <h3 className="font-display text-3xl text-slate-950">Route not found yet</h3>
-              <p className="text-base leading-8 text-slate-600">
-                We do not have a saved RouteMate journey for{" "}
-                <span className="font-semibold text-slate-950">{routeNotFound}</span> yet.
-                Try Kejetia, Ayeduase, Tech Junction, Adum, or Republic Hall.
-              </p>
+            <div className="max-w-2xl space-y-5">
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                🚧 Route coming soon
+              </div>
+              <h3 className="font-display text-3xl text-slate-950 dark:text-white">
+                {routeNotFound}
+              </h3>
+              {kumasiPlaces.some((p) => p.name.toLowerCase() === routeNotFound.toLowerCase()) ? (
+                <>
+                  <p className="text-base leading-8 text-slate-600 dark:text-slate-400">
+                    <strong>{routeNotFound}</strong> —{" "}
+                    {kumasiPlaces.find((p) => p.name.toLowerCase() === routeNotFound.toLowerCase())?.area}.
+                    We&apos;re actively adding trotro and taxi route data for this area
+                    including fares, boarding points, and driver phrases.
+                  </p>
+                  <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 dark:border-sky-800 dark:bg-sky-950">
+                    <p className="text-sm font-semibold text-sky-800 dark:text-sky-300">💡 Try these routes that work now:</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {routes.map((r) => (
+                        <button
+                          key={r.id}
+                          type="button"
+                          onClick={() => applyRoute(r)}
+                          className="rounded-full border border-sky-200 bg-white px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-100 dark:border-sky-700 dark:bg-slate-800 dark:text-sky-300"
+                        >
+                          {r.destination}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <p className="text-base leading-8 text-slate-600 dark:text-slate-400">
+                  We don&apos;t have a saved RouteMate journey for{" "}
+                  <span className="font-semibold text-slate-950 dark:text-white">{routeNotFound}</span> yet.
+                  Try one of our available routes below.
+                  <span className="mt-3 flex flex-wrap gap-2">
+                    {routes.map((r) => (
+                      <button
+                        key={r.id}
+                        type="button"
+                        onClick={() => applyRoute(r)}
+                        className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-100 dark:border-sky-700 dark:bg-slate-800 dark:text-sky-300"
+                      >
+                        {r.destination}
+                      </button>
+                    ))}
+                  </span>
+                </p>
+              )}
             </div>
           </GlassCard>
         ) : (
@@ -458,40 +491,7 @@ export default function HomePage() {
               selectedOptionKey={selectedOptionKey}
             />
 
-            <GlassCard className="hidden p-5 sm:block sm:p-6">
-              <div className="flex flex-wrap items-center gap-3 text-sm">
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700">
-                  Pick your location
-                </span>
-                <span className="text-sky-700">{"->"}</span>
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700">
-                  Search destination
-                </span>
-                <span className="text-sky-700">{"->"}</span>
-                <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-sky-700">
-                  Show route summary
-                </span>
-                <span className="text-sky-700">{"->"}</span>
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700">
-                  Show map movement
-                </span>
-                <span className="text-sky-700">{"->"}</span>
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700">
-                  Show step-by-step direction timeline
-                </span>
-                <span className="text-sky-700">{"->"}</span>
-                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-emerald-700">
-                  Show fare, time, savings, safety
-                </span>
-              </div>
-            </GlassCard>
 
-            <GoogleMapView
-              route={selectedRoute}
-              locationContext={locationContext}
-              compact
-              selectedOptionKey={selectedOptionKey}
-            />
             <RouteTimeline
               route={selectedRoute}
               locationContext={locationContext}
@@ -543,145 +543,9 @@ export default function HomePage() {
         <PopularRoutes routes={routes.slice(0, 6)} onSelect={applyRoute} />
       </section>
 
-      <section className="section-shell space-y-8 pb-20">
-        <SectionHeading
-          eyebrow="Landmarks And Hubs"
-          title="RouteMate already understands the key transport landmarks around campus and Kumasi."
-          description="These hubs anchor the navigation experience, from campus pickup points to city transfer stations and final destinations."
-        />
-        <TransportHubs hubs={transportHubs} />
-      </section>
 
-      <section className="section-shell grid gap-8 pb-20 xl:grid-cols-[0.95fr_1.05fr]">
-        <div className="space-y-8">
-          <SectionHeading
-            eyebrow="Phrase Assistant"
-            title="Common local phrases people can actually use in the car."
-            description="Clear, local phrasing makes the route system practical and culturally grounded."
-          />
 
-          <div className="space-y-4">
-            {driverPhraseExamples.map((phrase, index) => (
-              <motion.div
-                key={phrase}
-                initial={{ opacity: 0, x: -12 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <GlassCard className="flex items-center gap-4 p-4 transition duration-300 hover:-translate-y-1 hover:border-sky-300 sm:p-5">
-                  <div className="rounded-2xl border border-sky-200 bg-sky-50 p-3 text-sky-700">
-                    <Sparkles className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                      Local phrase
-                    </p>
-                    <p className="mt-2 text-base font-semibold text-slate-950 sm:text-lg">
-                      "{phrase}"
-                    </p>
-                  </div>
-                </GlassCard>
-              </motion.div>
-            ))}
-          </div>
-        </div>
 
-        <div className="space-y-8">
-          <SectionHeading
-            eyebrow="Safety And Trust"
-            title="Trust signals, fare guardrails, and safer landmark choices."
-            description="RouteMate should feel helpful and dependable, especially for students moving at night or for visitors who do not know local transport behavior yet."
-          />
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <GlassCard className="p-5 transition duration-300 hover:-translate-y-1 hover:border-amber-300">
-              <div className="flex items-center gap-3">
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-amber-700">
-                  <ShieldAlert className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-950">Night route warning</p>
-                  <p className="mt-1 text-sm leading-6 text-slate-600">
-                    Prefer well-lit landmarks and busy boarding points after 7pm.
-                  </p>
-                </div>
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-5 transition duration-300 hover:-translate-y-1 hover:border-emerald-300">
-              <div className="flex items-center gap-3">
-                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
-                  <Star className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-950">Route confidence: High</p>
-                  <p className="mt-1 text-sm leading-6 text-slate-600">
-                    Last verified May 2026 with community-confirmed route behavior.
-                  </p>
-                </div>
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-5 transition duration-300 hover:-translate-y-1 hover:border-sky-300">
-              <div className="flex items-center gap-3">
-                <div className="rounded-2xl border border-sky-200 bg-sky-50 p-3 text-sky-700">
-                  <Users className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-950">Community confirmation</p>
-                  <p className="mt-1 text-sm leading-6 text-slate-600">
-                    37 users confirmed this route pattern and fare range.
-                  </p>
-                </div>
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-5 transition duration-300 hover:-translate-y-1 hover:border-slate-300">
-              <div className="flex items-center gap-3">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-slate-700">
-                  <Banknote className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-950">Fare guardrails</p>
-                  <p className="mt-1 text-sm leading-6 text-slate-600">
-                    Clear ranges help riders avoid confusion and overcharging.
-                  </p>
-                </div>
-              </div>
-            </GlassCard>
-          </div>
-
-          <GlassCard className="p-5 sm:p-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  Community feedback
-                </p>
-                <h3 className="mt-2 font-display text-2xl text-slate-950">
-                  Report wrong fare or route changes
-                </h3>
-              </div>
-              <span className="chip border-amber-200 bg-amber-50 text-amber-700">
-                Demo feedback flow
-              </span>
-            </div>
-
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {reportActions.map((action) => (
-                <button
-                  key={action}
-                  type="button"
-                  onClick={() => handleFeedback(action)}
-                  className="rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-4 text-left text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:border-red-300 hover:bg-red-50"
-                >
-                  {action}
-                </button>
-              ))}
-            </div>
-          </GlassCard>
-        </div>
-      </section>
 
       <div className="section-shell">
         <GlassCard className="fixed bottom-4 left-1/2 z-40 w-[calc(100%-24px)] max-w-md -translate-x-1/2 px-3 py-3 sm:hidden">
