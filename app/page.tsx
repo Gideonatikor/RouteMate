@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { Info, Sparkles } from "lucide-react";
 import { DarkModeToggle } from "@/components/dark-mode-toggle";
+import { FeedbackModal } from "@/components/feedback-modal";
 import { ShareRouteButton } from "@/components/share-route-button";
 import { DriverPhraseCard } from "@/components/driver-phrase-card";
 import { HeroSearch } from "@/components/hero-search";
@@ -16,8 +17,8 @@ import { RouteSummaryCard } from "@/components/route-summary-card";
 import { RouteTimeline } from "@/components/route-timeline";
 import { SafetyTrustCard } from "@/components/safety-trust-card";
 import { SectionHeading } from "@/components/section-heading";
-
 import { GlassCard } from "@/components/ui/glass-card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   getRouteLocationContext,
   userLocationOptions,
@@ -29,7 +30,7 @@ import {
 } from "@/lib/mock-data";
 import { findRouteForOriginAndDestination } from "@/lib/route-matching";
 import type { RouteOptionKey } from "@/lib/route-presentation";
-import { findNearestLocation } from "@/lib/coordinates";
+import { findNearestLocation, distanceToPlace } from "@/lib/coordinates";
 import { kumasiPlaces } from "@/lib/kumasi-places";
 
 export default function HomePage() {
@@ -48,6 +49,14 @@ export default function HomePage() {
   const [gpsLocating, setGpsLocating] = useState(false);
   const [etaSeconds, setEtaSeconds] = useState<number | null>(null);
   const [arrivalAlert, setArrivalAlert] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [isLiveTracking, setIsLiveTracking] = useState(false);
+  const [isRouteLoading, setIsRouteLoading] = useState(false);
+  
+  // Refs for tracking real-time ETA
+  const watchIdRef = useRef<number | null>(null);
+  const initialEtaRef = useRef<number | null>(null);
+  const initialDistanceRef = useRef<number | null>(null);
   const locationContext = getRouteLocationContext(selectedRoute, selectedLocationId);
 
   useEffect(() => {
@@ -73,12 +82,17 @@ export default function HomePage() {
   }, [toastMessage]);
 
   function applyRoute(route: RouteRecord) {
+    setIsRouteLoading(true);
     setSelectedRoute(route);
     setQuery(route.destination);
     setLostModeActive(false);
     setLostStepIndex(0);
     setSelectedOptionKey(null);
     setRouteNotFound(null);
+    
+    setTimeout(() => {
+      setIsRouteLoading(false);
+    }, 400);
   }
 
   function handleLocationChange(locationId: UserLocationId) {
@@ -103,9 +117,15 @@ export default function HomePage() {
 
     const nextContext = getRouteLocationContext(matchedRoute.route, locationId);
 
+    setIsRouteLoading(true);
     setSelectedRoute(matchedRoute.route);
     setQuery(matchedRoute.route.destination);
     setRouteNotFound(null);
+    
+    setTimeout(() => {
+      setIsRouteLoading(false);
+    }, 400);
+
     setToastMessage(
       `Route ready from ${nextContext.originLabel} to ${matchedRoute.matchedDestination}.`,
     );
@@ -151,8 +171,8 @@ export default function HomePage() {
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  function handleFeedback(_action: string) {
-    setToastMessage("Thanks. Your feedback helps improve this route.");
+  function handleFeedback() {
+    setShowFeedback(true);
   }
 
   /* ── GPS Auto-Detect Location ────────────────────────────── */
@@ -233,31 +253,92 @@ export default function HomePage() {
     }
   }
 
-  /* ── ETA Countdown Timer ────────────────────────────────── */
+  /* ── Live ETA Countdown & GPS Tracking ──────────────────── */
   function startEta() {
-    // Parse estimated time from the route (e.g., "28 - 36 min" → use lower bound)
+    // 1. Parse initial estimated time from route
     const timeStr = selectedRoute.estimatedTime;
     const match = timeStr.match(/(\d+)/);
+    let baseEta = 0;
     if (match) {
-      setEtaSeconds(parseInt(match[1], 10) * 60);
+      baseEta = parseInt(match[1], 10) * 60;
+      setEtaSeconds(baseEta);
+      initialEtaRef.current = baseEta;
     }
+
+    // 2. Start Live GPS Tracking
+    if (!navigator.geolocation) {
+      setToastMessage("Live ETA relies on GPS, which isn't supported on this device.");
+      return;
+    }
+
+    setIsLiveTracking(true);
+    setToastMessage("📍 Live tracking started! ETA will update as you move.");
+
+    // First get a starting fix to establish initial distance
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const gps = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        const dist = distanceToPlace(gps, selectedRoute.destination);
+        initialDistanceRef.current = dist;
+
+        // Now watch for continuous movement
+        watchIdRef.current = navigator.geolocation.watchPosition(
+          (watchPos) => {
+            const liveGps = { lat: watchPos.coords.latitude, lng: watchPos.coords.longitude };
+            const liveDist = distanceToPlace(liveGps, selectedRoute.destination);
+            
+            // If they are within 100 meters, they have arrived!
+            if (liveDist <= 100) {
+              setEtaSeconds(0);
+              return;
+            }
+
+            // Proportionally adjust the ETA based on distance covered
+            if (initialDistanceRef.current && initialDistanceRef.current > 0 && initialEtaRef.current) {
+              const fractionRemaining = liveDist / initialDistanceRef.current;
+              // Cap at 1 so ETA doesn't increase if they move backward initially
+              const safeFraction = Math.min(1, Math.max(0, fractionRemaining));
+              const newEta = Math.floor(initialEtaRef.current * safeFraction);
+              setEtaSeconds(newEta);
+            }
+          },
+          (err) => {
+            console.error("GPS Watch Error:", err);
+          },
+          { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+        );
+      },
+      (err) => {
+        console.error("GPS Initial Locate Error:", err);
+        setToastMessage("Couldn't get GPS fix for live ETA.");
+        setIsLiveTracking(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   }
 
+  // Cleanup watcher when component unmounts or ETA finishes
   useEffect(() => {
-    if (etaSeconds === null || etaSeconds <= 0) return;
-
-    const interval = window.setInterval(() => {
-      setEtaSeconds((prev) => {
-        if (prev === null || prev <= 1) {
-          setArrivalAlert(`🎉 You should be arriving at ${selectedRoute.destination} now!`);
-          return null;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => window.clearInterval(interval);
+    if (etaSeconds === 0) {
+      setArrivalAlert(`🎉 You have arrived at ${selectedRoute.destination}!`);
+      setIsLiveTracking(false);
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    }
   }, [etaSeconds, selectedRoute.destination]);
+
+
+  // Cleanup watcher on unmount or route change
+  useEffect(() => {
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    };
+  }, []);
 
   // Clear arrival alert after 8 seconds
   useEffect(() => {
@@ -266,10 +347,15 @@ export default function HomePage() {
     return () => window.clearTimeout(timeout);
   }, [arrivalAlert]);
 
-  // Reset ETA when route changes
+  // Reset ETA and tracking when route changes
   useEffect(() => {
     setEtaSeconds(null);
     setArrivalAlert(null);
+    setIsLiveTracking(false);
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
   }, [selectedRoute.id]);
 
   function formatEta(seconds: number) {
@@ -346,49 +432,35 @@ export default function HomePage() {
               selectedOptionKey={selectedOptionKey}
             />
 
-            <div className="grid gap-4 md:grid-cols-3">
-              <GlassCard className="p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  Your location
-                </p>
-                <p className="mt-2 text-sm font-semibold text-slate-950">
-                  {locationContext.originLabel}
-                </p>
-              </GlassCard>
-              <GlassCard className="p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  Board at
-                </p>
-                <p className="mt-2 text-sm font-semibold text-slate-950">
-                  {selectedRoute.boardingPoint}
-                </p>
-              </GlassCard>
-              <GlassCard className="p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  Savings
-                </p>
-                <p className="mt-2 text-sm font-semibold text-emerald-700">
-                  {selectedRoute.savings}
-                </p>
-              </GlassCard>
-            </div>
 
             {/* ETA Countdown & Start Trip */}
             <GlassCard className="p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                    {etaSeconds !== null ? "⏱️ ETA Countdown" : "🚌 Trip Timer"}
-                  </p>
-                  {etaSeconds !== null ? (
-                    <p className="mt-2 font-display text-3xl font-bold tabular-nums text-sky-700">
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      {etaSeconds !== null ? "⏱️ ETA Countdown" : "🚌 Trip Timer"}
+                    </p>
+                    {isLiveTracking && (
+                      <span className="animate-pulse rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                        Live
+                      </span>
+                    )}
+                  </div>
+                  {isRouteLoading ? (
+                    <div className="mt-2 flex items-baseline gap-2">
+                      <Skeleton className="h-9 w-24" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                  ) : etaSeconds !== null ? (
+                    <p className="mt-2 font-display text-3xl font-bold tabular-nums text-sky-700 dark:text-sky-400">
                       {formatEta(etaSeconds)}
-                      <span className="ml-2 text-sm font-normal text-slate-500">
+                      <span className="ml-2 text-sm font-normal text-slate-500 dark:text-slate-400">
                         to {selectedRoute.destination}
                       </span>
                     </p>
                   ) : (
-                    <p className="mt-2 text-sm text-slate-600">
+                    <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
                       Start the timer when you board. ETA: {selectedRoute.estimatedTime}
                     </p>
                   )}
@@ -396,8 +468,16 @@ export default function HomePage() {
                 {etaSeconds !== null ? (
                   <button
                     type="button"
-                    onClick={() => { setEtaSeconds(null); setArrivalAlert(null); }}
-                    className="rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+                    onClick={() => {
+                      setEtaSeconds(null);
+                      setArrivalAlert(null);
+                      setIsLiveTracking(false);
+                      if (watchIdRef.current !== null) {
+                        navigator.geolocation.clearWatch(watchIdRef.current);
+                        watchIdRef.current = null;
+                      }
+                    }}
+                    className="rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-800 dark:bg-red-950 dark:text-red-300"
                   >
                     Stop Timer
                   </button>
@@ -483,6 +563,17 @@ export default function HomePage() {
               )}
             </div>
           </GlassCard>
+        ) : isRouteLoading ? (
+          <GlassCard className="p-6">
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-1/4" />
+              <Skeleton className="h-4 w-3/4" />
+              <div className="mt-6 flex gap-4">
+                <Skeleton className="h-24 flex-1 rounded-xl" />
+                <Skeleton className="h-24 flex-1 rounded-xl" />
+              </div>
+            </div>
+          </GlassCard>
         ) : (
           <div className="space-y-6">
             <RouteSummaryCard
@@ -514,6 +605,17 @@ export default function HomePage() {
             <div className="grid gap-6 xl:grid-cols-2">
               <DriverPhraseCard route={selectedRoute} />
               <SafetyTrustCard route={selectedRoute} />
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleFeedback}
+                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-500 transition hover:border-slate-300 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+              >
+                <span>⚑</span>
+                Report an issue with this route
+              </button>
             </div>
           </div>
         )}
@@ -613,6 +715,14 @@ export default function HomePage() {
           </motion.div>
         ) : null}
       </AnimatePresence>
+
+      {showFeedback && (
+        <FeedbackModal
+          route={selectedRoute}
+          onClose={() => setShowFeedback(false)}
+          onSubmitted={() => setToastMessage("Thanks. Your feedback helps improve this route.")}
+        />
+      )}
     </main>
   );
 }

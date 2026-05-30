@@ -2,7 +2,7 @@ import type { RouteRecord } from "@/lib/mock-data";
 
 export type UserLocationId =
   | "knust-main-gate"
-  | "brunei-bus-stop"
+  | "conti-bus-stop"
   | "engineering-gate"
   | "ayeduase-gate"
   | "commercial-area"
@@ -12,7 +12,13 @@ export type UserLocationId =
   | "tech-junction"
   | "kejetia"
   | "adum"
-  | "asafo-station";
+  | "asafo-station"
+  | "suame"
+  | "bantama"
+  | "manhyia"
+  | "ahodwo"
+  | "anloga-junction"
+  | "airport-roundabout";
 
 export type TransportHubCategory = "origin" | "hub" | "destination" | "transfer";
 
@@ -50,9 +56,9 @@ export const userLocationOptions: UserLocationOption[] = [
     hint: "Main entry and exit for campus movement",
   },
   {
-    id: "brunei-bus-stop",
-    label: "Brunei Bus Stop",
-    hint: "Student pickup point for town-bound rides",
+    id: "conti-bus-stop",
+    label: "Conti Bus Stop",
+    hint: "Main trotro & taxi pickup near Conti/Commercial Area",
   },
   {
     id: "engineering-gate",
@@ -107,6 +113,42 @@ export const userLocationOptions: UserLocationOption[] = [
     label: "Asafo Station",
     hint: "Transfer point for several Kumasi routes",
   },
+  {
+    id: "suame",
+    label: "Suame",
+    hint: "Suame Magazine — auto-industry hub, north Kumasi",
+    aliases: ["Suame Magazine"],
+  },
+  {
+    id: "bantama",
+    label: "Bantama",
+    hint: "Bantama High Street — major hub between KNUST and Manhyia",
+    aliases: ["Bantama Market"],
+  },
+  {
+    id: "manhyia",
+    label: "Manhyia",
+    hint: "Manhyia Palace area — north Kumasi",
+    aliases: ["Manhyia Palace"],
+  },
+  {
+    id: "ahodwo",
+    label: "Ahodwo",
+    hint: "Ahodwo Roundabout — south-west Kumasi residential area",
+    aliases: ["Ahodwo Roundabout"],
+  },
+  {
+    id: "anloga-junction",
+    label: "Anloga Junction",
+    hint: "Anloga Junction — mid-route hub between KNUST and Asafo",
+    aliases: ["Anloga"],
+  },
+  {
+    id: "airport-roundabout",
+    label: "Airport Roundabout",
+    hint: "Kumasi Airport area — south Kumasi near Kaase",
+    aliases: ["Airport", "Kaase"],
+  },
 ];
 
 export const transportHubs: TransportHub[] = [
@@ -121,8 +163,8 @@ export const transportHubs: TransportHub[] = [
     category: "hub",
   },
   {
-    name: "Brunei Bus Stop",
-    use: "Student pickup point",
+    name: "Conti Bus Stop",
+    use: "Main trotro & taxi pickup point",
     category: "origin",
   },
   {
@@ -180,11 +222,41 @@ export const transportHubs: TransportHub[] = [
     use: "Eastward transport destination",
     category: "destination",
   },
+  {
+    name: "Suame",
+    use: "Auto-industry hub and north Kumasi destination",
+    category: "destination",
+  },
+  {
+    name: "Bantama",
+    use: "Major hub between city centre and Manhyia",
+    category: "hub",
+  },
+  {
+    name: "Manhyia Palace",
+    use: "Seat of the Ashanti Kingdom — north Kumasi",
+    category: "destination",
+  },
+  {
+    name: "Ahodwo Roundabout",
+    use: "South-west residential area and connecting hub",
+    category: "hub",
+  },
+  {
+    name: "Anloga Junction",
+    use: "Mid-route junction and transfer point",
+    category: "transfer",
+  },
+  {
+    name: "Airport Roundabout",
+    use: "Kumasi Airport and Kaase Industrial Area",
+    category: "destination",
+  },
 ];
 
 const landmarkPreferences: Record<UserLocationId, string[]> = {
-  "knust-main-gate": ["Main Gate", "Engineering Gate", "Brunei"],
-  "brunei-bus-stop": ["Brunei Bus Stop"],
+  "knust-main-gate": ["Main Gate", "Engineering Gate", "Conti"],
+  "conti-bus-stop": ["Conti Bus Stop"],
   "engineering-gate": ["Engineering Gate"],
   "ayeduase-gate": ["Engineering Gate", "Ayeduase"],
   "commercial-area": ["Commercial Area", "Shell"],
@@ -195,6 +267,12 @@ const landmarkPreferences: Record<UserLocationId, string[]> = {
   kejetia: ["Kejetia"],
   adum: ["Adum"],
   "asafo-station": ["Asafo"],
+  suame: ["Suame"],
+  bantama: ["Bantama"],
+  manhyia: ["Manhyia"],
+  ahodwo: ["Ahodwo"],
+  "anloga-junction": ["Anloga"],
+  "airport-roundabout": ["Airport"],
 };
 
 function normalize(value: string) {
@@ -209,8 +287,8 @@ function getWalkTime(route: RouteRecord, locationId: UserLocationId) {
   switch (locationId) {
     case "engineering-gate":
       return route.boardingPoint === "Engineering Gate" ? "0 - 1 min" : "4 min";
-    case "brunei-bus-stop":
-      return route.boardingPoint === "Brunei Bus Stop" ? "0 - 1 min" : "4 min";
+    case "conti-bus-stop":
+      return route.boardingPoint === "Conti Bus Stop" ? "0 - 1 min" : "3 min";
     case "ayeduase-gate":
       return route.boardingPoint === "Engineering Gate" ? "2 min" : "5 min";
     case "commercial-area":
@@ -218,9 +296,29 @@ function getWalkTime(route: RouteRecord, locationId: UserLocationId) {
     case "republic-hall-area":
       return "4 min";
     case "unity-hall-conti":
-      return "4 min";
+      return route.boardingPoint === "Conti Bus Stop" ? "1 - 2 min" : "4 min";
     case "university-hall-katanga":
       return "5 min";
+    case "tech-junction":
+      return route.boardingPoint === "Tech Junction Main Station" ? "0 - 1 min" : "3 min";
+    case "kejetia":
+      return route.boardingPoint === "Kejetia Terminal" ? "0 - 1 min" : "4 min";
+    case "adum":
+      return route.boardingPoint === "Adum PZ" ? "0 - 1 min" : "4 min";
+    case "asafo-station":
+      return route.boardingPoint === "Asafo Station" ? "0 - 1 min" : "3 min";
+    case "suame":
+      return route.boardingPoint === "Suame Magazine" ? "0 - 1 min" : "3 min";
+    case "bantama":
+      return route.boardingPoint === "Bantama Market" ? "0 - 1 min" : "3 min";
+    case "manhyia":
+      return route.boardingPoint === "Manhyia Palace" ? "0 - 1 min" : "4 min";
+    case "ahodwo":
+      return route.boardingPoint === "Ahodwo Roundabout" ? "0 - 1 min" : "3 min";
+    case "anloga-junction":
+      return route.boardingPoint === "Anloga Junction" ? "0 - 1 min" : "2 min";
+    case "airport-roundabout":
+      return route.boardingPoint === "Airport Roundabout" ? "0 - 1 min" : "3 min";
     case "knust-main-gate":
     default:
       return route.nearbyLandmarks[0]?.walkTime ?? "3 min";

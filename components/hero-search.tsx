@@ -25,6 +25,7 @@ import {
   type RouteOptionKey,
 } from "@/lib/route-presentation";
 import { GlassCard } from "@/components/ui/glass-card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type HeroSearchProps = {
   query: string;
@@ -248,16 +249,22 @@ export function HeroSearch({
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <MapPin className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-sky-600" />
-                <input
-                  value={locationSearch}
-                  onChange={(e) => {
-                    setLocationSearch(e.target.value);
-                    setLocationDropdownOpen(true);
-                  }}
-                  onFocus={() => setLocationDropdownOpen(true)}
-                  placeholder="Type your location... (e.g. Brunei, Engineering Gate)"
-                  className="h-[52px] w-full rounded-[20px] border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm text-slate-950 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100"
-                />
+                {gpsLocating ? (
+                  <div className="flex h-[52px] w-full items-center rounded-[20px] border border-slate-200 bg-slate-50 pl-11 pr-4">
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                ) : (
+                  <input
+                    value={locationSearch}
+                    onChange={(e) => {
+                      setLocationSearch(e.target.value);
+                      setLocationDropdownOpen(true);
+                    }}
+                    onFocus={() => setLocationDropdownOpen(true)}
+                    placeholder="Type your location... (e.g. Brunei, Engineering Gate)"
+                    className="h-[52px] w-full rounded-[20px] border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm text-slate-950 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100"
+                  />
+                )}
               </div>
               <button
                 type="button"

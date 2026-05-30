@@ -12,7 +12,7 @@ export type KumasiPlace = {
 export const kumasiPlaces: KumasiPlace[] = [
   // ── KNUST Campus Areas ──
   { name: "KNUST Main Gate", area: "KNUST Campus", aliases: ["knust", "main gate", "tech"] },
-  { name: "Brunei Bus Stop", area: "KNUST Campus", aliases: ["brunei", "brunei hostel"] },
+  { name: "Conti Bus Stop", area: "KNUST Campus", aliases: ["conti", "unity hall", "commercial area"] },
   { name: "Engineering Gate", area: "KNUST Campus", aliases: ["engineering", "eng gate"] },
   { name: "Ayeduase Gate", area: "KNUST Campus", aliases: ["ayeduase gate", "kotei"] },
   { name: "Commercial Area", area: "KNUST Campus", aliases: ["commercial", "conti"] },
